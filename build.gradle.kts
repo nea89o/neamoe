@@ -9,6 +9,10 @@ repositories {
 }
 
 kotlin {
+    sourceSets.all {
+        languageSettings.optIn("kotlin.ExperimentalStdlibApi")
+        languageSettings.optIn("kotlin.RequiresOptIn")
+    }
     js(IR) {
         browser {
             commonWebpackConfig {

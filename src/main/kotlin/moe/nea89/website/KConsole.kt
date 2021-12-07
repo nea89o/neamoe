@@ -3,20 +3,27 @@ package moe.nea89.website
 import kotlinx.browser.document
 import kotlinx.html.dom.append
 import kotlinx.html.js.pre
-import org.w3c.dom.*
+import org.w3c.dom.HTMLElement
+import org.w3c.dom.HTMLPreElement
 import org.w3c.dom.events.KeyboardEvent
 import kotlin.collections.set
 
-class KConsole(private val root: HTMLElement, private val text: HTMLPreElement) {
+class KConsole(
+    private val root: HTMLElement,
+    private val text: HTMLPreElement,
+    private val fileSystem: KFileSystem?,
+) {
+
+    val fileAccessor = fileSystem?.let { FileAccessor(it) }
 
     companion object {
         val shlexRegex =
             """"([^"\\]+|\\.)+"|([^ "'\\]+|\\.)+|'([^'\\]+|\\.)+'""".toRegex()
 
-        fun createFor(element: HTMLElement): KConsole {
+        fun createFor(element: HTMLElement, fileSystem: KFileSystem? = null): KConsole {
             val text = element.append.pre()
             element.classList.add(Styles.consoleClass)
-            val console = KConsole(element, text)
+            val console = KConsole(element, text, fileSystem)
             document.body!!.onkeydown = console::keydown
             console.addLine("Starting up terminal.")
             console.rerender()
@@ -86,6 +93,7 @@ class KConsole(private val root: HTMLElement, private val text: HTMLPreElement) 
                 println("Could not shlex: $command")
                 return null
             }
+            // TODO: Proper string unescaping
             parts.add(match.groupValues.drop(1).firstOrNull { it != "" } ?: "")
             i += match.value.length
             while (command[i] == ' ' && i < command.length)
