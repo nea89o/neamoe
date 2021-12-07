@@ -12,7 +12,8 @@ object Styles : StyleSheet("Styles") {
     val comicMono = "\"Comic Mono\", monospace"
 
     val global by css {
-        root {
+        "*" {
+            padding(0.px)
             margin(0.px)
             boxSizing = BoxSizing.borderBox
         }
@@ -26,6 +27,9 @@ object Styles : StyleSheet("Styles") {
         ".$consoleClass" {
             width = 100.pct
             height = 100.pct
+            pre {
+                fontFamily = comicMono
+            }
         }
     }
 }

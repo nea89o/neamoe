@@ -3,9 +3,9 @@ package moe.nea89.website
 import kotlinx.browser.document
 import kotlinx.html.dom.append
 import kotlinx.html.js.pre
-import org.w3c.dom.HTMLElement
-import org.w3c.dom.HTMLPreElement
+import org.w3c.dom.*
 import org.w3c.dom.events.KeyboardEvent
+import kotlin.collections.set
 
 class KConsole(private val root: HTMLElement, private val text: HTMLPreElement) {
 
@@ -41,6 +41,10 @@ class KConsole(private val root: HTMLElement, private val text: HTMLPreElement) 
         scrollDown()
     }
 
+    fun scrollDown() {
+        text.lastElementChild?.scrollIntoView()
+    }
+
     fun rerender() {
         val view = lines.joinToString(separator = "\n") + "\n${'$'} $input"
         text.innerText = view
@@ -55,10 +59,8 @@ class KConsole(private val root: HTMLElement, private val text: HTMLPreElement) 
 
     val commands = mutableMapOf<String, Command>()
 
-    fun scrollDown() {} // TODO scroooooll
-
-    fun executeCommand(command: String) {
-        val parts = shlex(command)
+    fun executeCommand(commandLine: String) {
+        val parts = shlex(commandLine)
         if (parts.isNullOrEmpty()) {
             addLine("Syntax Error")
             return
@@ -108,5 +110,6 @@ class KConsole(private val root: HTMLElement, private val text: HTMLPreElement) 
                     input += event.key
         }
         rerender()
+        scrollDown()
     }
 }

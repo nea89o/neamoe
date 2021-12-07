@@ -23,6 +23,8 @@ kotlin {
 val processResources by tasks.getting(Copy::class)
 
 dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC")
+
     implementation(enforcedPlatform("org.jetbrains.kotlin-wrappers:kotlin-wrappers-bom:0.0.1-pre.256-kotlin-1.5.31"))
     implementation("org.jetbrains.kotlin-wrappers:kotlin-styled")
     implementation(npm("@fontsource/comic-mono", "^4.5.0"))
