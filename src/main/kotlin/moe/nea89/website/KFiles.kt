@@ -1,27 +1,58 @@
 package moe.nea89.website
 
-sealed interface KFile {
+sealed class KFile {
+    /**
+     * Only be empty for the root fs
+     * */
+    var parent: Directory? = null
+        private set
+
+    val name: List<String>
+        get() =
+            parent?.let { it.name + it.files.filter { it.value == this }.keys.first() } ?: emptyList()
+
+    fun linkTo(parent: Directory) {
+        if (this.parent == null)
+            this.parent = parent
+    }
+
     val fileType: String
         get() = when (this) {
-            is KFile.Directory -> "directory"
-            is KFile.Download -> "download"
-            is KFile.Image -> "image"
-            is KFile.Text -> "text file"
+            is Directory -> "directory"
+            is Download -> "download"
+            is Image -> "image"
+            is Text -> "text file"
         }
 
-    data class Text(val text: String) : KFile
-    data class Image(val url: String) : KFile
-    data class Download(val url: String) : KFile
-    data class Directory(val files: Map<String, KFile>) : KFile
+    data class Text(val text: String) : KFile()
+    data class Image(val url: String) : KFile()
+    data class Download(val url: String) : KFile()
+    data class Directory(val files: Map<String, KFile>) : KFile()
 }
 
 data class KFileSystem(val root: KFile.Directory) {
+    init {
+        if (!verifyHierarchy(root)) {
+            throw RuntimeException("File system had missing links. Use linkTo with the primary parent directory")
+        }
+    }
+
+    private fun verifyHierarchy(el: KFile.Directory): Boolean =
+        el.files.values.all {
+            it.parent == el && (it !is KFile.Directory || verifyHierarchy(it))
+        }
+
+
     /**
      * Uses normalized paths
      * */
     fun resolve(parts: List<String>): KFile? =
         parts.fold<String, KFile?>(root) { current, part ->
-            if (current is KFile.Directory) {
+            if (part == "." || part == "")
+                current
+            else if (part == "..")
+                current?.parent
+            else if (current is KFile.Directory) {
                 current.files[part]
             } else
                 null
@@ -37,47 +68,15 @@ class FileAccessor(val fileSystem: KFileSystem, var implicitPushD: Boolean = fal
     val dirStack = mutableListOf<List<String>>()
     var currentDir = listOf<String>()
 
-    private fun directoryUp(): FSError? {
-        if (currentDir.isEmpty()) return FSError.ENOENT
-        currentDir = currentDir.dropLast(1)
-        return null
-    }
-
-    private fun tryEnterDirectory(path: String): FSError? {
-        val cwd = fileSystem.resolve(currentDir)
-            ?: throw RuntimeException("Current working directory $currentDir does not exist in filesystem")
-        if (cwd !is KFile.Directory)
-            throw RuntimeException("Current working directory $currentDir is not a directory in filesystem")
-        val file = cwd.files[path] ?: return FSError.ENOENT
-        if (file !is KFile.Directory) return FSError.EISNOTDIR
-        currentDir = currentDir + path
-        return null
-    }
-
-    fun cdSingle(path: String): FSError? {
-        if ('/' in path) throw RuntimeException("Cannot single cd with path: $path")
-        return when (path) {
-            "." -> null
-            ".." -> directoryUp()
-            "" -> null
-            else -> tryEnterDirectory(path)
-        }
-    }
-
     fun cd(path: String): FSError? {
-        val parts = path.split("/").filter { it.isNotEmpty() }
-        val rollbackPath = currentDir
-        if (path.startsWith("/")) {
-            currentDir = emptyList()
-        }
-        parts.forEach {
-            val error = cdSingle(it)
-            if (error != null) {
-                currentDir = rollbackPath
-                return error
+        val file = resolve(path) ?: return FSError.ENOENT
+        return when (file) {
+            !is KFile.Directory -> FSError.EISNOTDIR
+            else -> {
+                currentDir = file.name
+                null
             }
         }
-        return null
     }
 
     fun resolve(path: String): KFile? {
@@ -147,5 +146,7 @@ class FileSystemBuilder {
         addNode(this, FileSystemBuilder().also(block).build())
     }
 
-    fun build() = KFile.Directory(files)
+    fun build() = KFile.Directory(files).also { dir ->
+        files.values.forEach { file -> file.linkTo(dir) }
+    }
 }
