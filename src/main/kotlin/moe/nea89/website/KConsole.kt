@@ -31,6 +31,13 @@ class KConsole(
         }
     }
 
+    enum class ConsoleState {
+        SHELLPROMPT,
+        IN_PROGRAM
+    }
+
+    var state = ConsoleState.SHELLPROMPT
+
     val lines = mutableListOf<String>()
 
     var input: String = ""
@@ -53,7 +60,9 @@ class KConsole(
     }
 
     fun rerender() {
-        val view = lines.joinToString(separator = "\n") + "\n${'$'} $input"
+        var view = lines.joinToString(separator = "\n")
+        if (state == ConsoleState.SHELLPROMPT)
+            view += "\n${'$'} $input"
         text.innerText = view
     }
 
@@ -80,7 +89,7 @@ class KConsole(
             addLine("Unknown command")
             return
         }
-        commandThing.run(this, command, arguments)
+        ShellExecutionContext.run(this, commandThing, command, arguments)
     }
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -105,6 +114,7 @@ class KConsole(
     fun keydown(event: KeyboardEvent) {
         if (event.altKey || event.ctrlKey || event.metaKey) return
         if (event.isComposing || event.keyCode == 229) return
+        if (state != ConsoleState.SHELLPROMPT) return
         when (event.key) {
             "Enter" -> {
                 val toExecute = input

@@ -150,3 +150,12 @@ class FileSystemBuilder {
         files.values.forEach { file -> file.linkTo(dir) }
     }
 }
+
+suspend fun ShellExecutionContext.requireFileAccessor(): FileAccessor {
+    val fa = console.fileAccessor
+    if (fa == null) {
+        console.addLine("There is no file accessor present :(")
+        exit()
+    }
+    return fa
+}

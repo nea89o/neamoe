@@ -6,37 +6,31 @@ import kotlinx.html.dom.append
 import kotlinx.html.js.div
 import styled.injectGlobal
 
-fun main() {
-    require("@fontsource/comic-mono/index.css")
-    injectGlobal(Styles.global)
-    val root = document.body!!.append.div()
-    val console = KConsole.createFor(root, fileSystem = fileSystem {
-        "etc" {
-            "passwd" text "hunter2"
-        }
-        "home/nea" {
-            "todo" text """
+val defaultFileSystem = fileSystem {
+    "etc" {
+        "passwd" text "hunter2"
+    }
+    "home/nea" {
+        "todo" text """
                 | - git gud
                 | - finish this website
                 | - convince the general public that comic sans is a viable font
             """.trimMargin()
-        }
-        "flag" text "CTF{12345abcdefghijklmonp3.1.4.1.5.9.2.8}"
-    })
+    }
+    "flag" text "CTF{12345abcdefghijklmonp3.1.4.1.5.9.2.8}"
+}
+
+fun main() {
+    require("@fontsource/comic-mono/index.css")
+    injectGlobal(Styles.global)
+    val root = document.body!!.append.div()
+    val console = KConsole.createFor(root, fileSystem = defaultFileSystem)
     console.registerCommand(command("cwd", "pwd") {
-        val fa = console.fileAccessor
-        if (fa == null) {
-            console.addLine("There is no file accessor present :(")
-            return@command
-        }
+        val fa = requireFileAccessor()
         console.addLine(fa.currentDir.joinToString(separator = "/", prefix = "/"))
     })
     console.registerCommand(command("cd") {
-        val fa = console.fileAccessor
-        if (fa == null) {
-            console.addLine("There is no file accessor present :(")
-            return@command
-        }
+        val fa = requireFileAccessor()
         val path = args.singleOrNull()
         if (path == null) {
             console.addLine("Usage: cd <directory>")
@@ -48,11 +42,7 @@ fun main() {
         }
     })
     console.registerCommand(command("ls") {
-        val fa = console.fileAccessor
-        if (fa == null) {
-            console.addLine("There is no file accessor present :(")
-            return@command
-        }
+        val fa = requireFileAccessor()
         val path = when (args.size) {
             0 -> "."
             1 -> args[0]
@@ -79,13 +69,8 @@ fun main() {
         }
     })
     console.registerCommand(command("cat") {
-        val fa = console.fileAccessor
-        if (fa == null) {
-            console.addLine("There is no file accessor present :(")
-            return@command
-        }
+        val fa = requireFileAccessor()
         val path = when (args.size) {
-            0 -> "."
             1 -> args[0]
             else -> {
                 console.addLine("Usage: cat [directory or file]")
@@ -107,11 +92,7 @@ fun main() {
     console.registerCommand(command("dick", "cock") {
         console.addMultilineText("Hehe")
     })
-    console.registerCommand(object : Command {
-        override val name: String = "booob"
-        override val aliases: Set<String> = setOf("boob")
-        override fun run(console: KConsole, name: String, args: List<String>) {
-            console.addMultilineText(boobs)
-        }
+    console.registerCommand(command("boob", "booob") {
+        console.addMultilineText(boobs)
     })
 }
