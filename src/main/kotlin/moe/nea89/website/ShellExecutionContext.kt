@@ -33,6 +33,7 @@ class ShellExecutionContext(
         fun run(
             console: KConsole, command: Command, name: String, args: List<String>
         ) {
+            console.state = KConsole.ConsoleState.IN_PROGRAM
             val se = ShellExecutionContext(console, name, args)
             command.runner.createCoroutine(se, object : Continuation<Unit> {
                 override val context: CoroutineContext

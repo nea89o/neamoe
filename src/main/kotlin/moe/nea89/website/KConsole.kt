@@ -52,7 +52,6 @@ class KConsole(
 
     fun addLine(line: String) {
         lines.add(line)
-        scrollDown()
     }
 
     fun scrollDown() {
@@ -61,8 +60,9 @@ class KConsole(
 
     fun rerender() {
         var view = lines.joinToString(separator = "\n")
-        if (state == ConsoleState.SHELLPROMPT)
+        if (state == ConsoleState.SHELLPROMPT) {
             view += "\n${'$'} $input"
+        }
         text.innerText = view
     }
 

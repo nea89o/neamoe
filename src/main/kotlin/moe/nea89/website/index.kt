@@ -5,6 +5,7 @@ import kotlinx.browser.document
 import kotlinx.html.dom.append
 import kotlinx.html.js.div
 import styled.injectGlobal
+import kotlin.time.Duration.Companion.milliseconds
 
 val defaultFileSystem = fileSystem {
     "etc" {
@@ -60,9 +61,11 @@ fun main() {
             is KFile.Directory -> {
                 val longestName = file.files.keys.maxOf { it.length }
                 file.files.forEach { (name, file) ->
+                    wait(200.milliseconds)
                     console.addLine(
                         name + " ".repeat(longestName + 1 - name.length) + file.fileType
                     )
+                    console.rerender()
                 }
             }
             else -> "is a ${file.fileType}"
