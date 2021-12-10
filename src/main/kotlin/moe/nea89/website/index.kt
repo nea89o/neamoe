@@ -77,6 +77,9 @@ fun main() {
             else -> "is a ${file.fileType}"
         }
     })
+    console.registerCommand(command("color") {
+        console.addLine("This is a ", red("red"), " word: ", green("1.0"), " ", blue("BLUUEEE"))
+    })
     console.registerCommand(command("cat") {
         val fa = requireFileAccessor()
         val path = when (args.size) {
@@ -103,6 +106,7 @@ fun main() {
                 document.body!!.append(link)
                 link.click()
                 link.remove()
+                console.addLine("Download started")
             }
         }
     })

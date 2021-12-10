@@ -5,6 +5,7 @@ import kotlinx.html.dom.append
 import kotlinx.html.dom.create
 import kotlinx.html.js.p
 import kotlinx.html.js.pre
+import kotlinx.html.js.span
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLParagraphElement
 import org.w3c.dom.HTMLPreElement
@@ -46,20 +47,30 @@ class KConsole(
     var input: String = ""
 
     fun addLines(newLines: List<String>) {
-        newLines.forEach(this::addLine)
+        newLines.forEach { addLine(it) }
     }
 
     fun addMultilineText(text: String) {
         addLines(text.split("\n"))
     }
 
-    fun addLine(line: String) {
-        addLine(document.create.p {
-            text(line)
+    fun addLine(vararg elements: Any) {
+        addLine(document.create.p().apply {
+            elements.forEach {
+                when (it) {
+                    is HTMLElement -> append(it)
+                    is ColoredElement -> append(document.create.span().also { el ->
+                        el.style.color = it.color.color.toString()
+                        el.append(it.text)
+                    })
+                    is String -> append(it)
+                    else -> throw RuntimeException("Unknown element")
+                }
+            }
         })
     }
 
-    fun addLine(element: HTMLParagraphElement) {
+    private fun addLine(element: HTMLParagraphElement) {
         text.insertBefore(element, prompt)
     }
 
