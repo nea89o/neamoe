@@ -2,8 +2,11 @@ package moe.nea89.website
 
 import kotlinx.browser.document
 import kotlinx.html.dom.append
+import kotlinx.html.dom.create
+import kotlinx.html.js.p
 import kotlinx.html.js.pre
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.HTMLParagraphElement
 import org.w3c.dom.HTMLPreElement
 import org.w3c.dom.events.KeyboardEvent
 import kotlin.collections.set
@@ -11,7 +14,8 @@ import kotlin.collections.set
 class KConsole(
     private val root: HTMLElement,
     private val text: HTMLPreElement,
-    private val fileSystem: KFileSystem?,
+    private val prompt: HTMLElement,
+    fileSystem: KFileSystem?,
 ) {
 
     val fileAccessor = fileSystem?.let { FileAccessor(it) }
@@ -22,8 +26,9 @@ class KConsole(
 
         fun createFor(element: HTMLElement, fileSystem: KFileSystem? = null): KConsole {
             val text = element.append.pre()
+            val prompt = text.append.p()
             element.classList.add(Styles.consoleClass)
-            val console = KConsole(element, text, fileSystem)
+            val console = KConsole(element, text, prompt, fileSystem)
             document.body!!.onkeydown = console::keydown
             console.addLine("Starting up terminal.")
             console.rerender()
@@ -38,12 +43,10 @@ class KConsole(
 
     var state = ConsoleState.SHELLPROMPT
 
-    val lines = mutableListOf<String>()
-
     var input: String = ""
 
     fun addLines(newLines: List<String>) {
-        lines.addAll(newLines)
+        newLines.forEach(this::addLine)
     }
 
     fun addMultilineText(text: String) {
@@ -51,19 +54,25 @@ class KConsole(
     }
 
     fun addLine(line: String) {
-        lines.add(line)
+        addLine(document.create.p {
+            text(line)
+        })
+    }
+
+    fun addLine(element: HTMLParagraphElement) {
+        text.insertBefore(element, prompt)
+    }
+
+    fun rerender() {
+        if (state == KConsole.ConsoleState.SHELLPROMPT) {
+            prompt.innerText = "${'$'} $input"
+        } else {
+            prompt.innerText = ""
+        }
     }
 
     fun scrollDown() {
         text.lastElementChild?.scrollIntoView()
-    }
-
-    fun rerender() {
-        var view = lines.joinToString(separator = "\n")
-        if (state == ConsoleState.SHELLPROMPT) {
-            view += "\n${'$'} $input"
-        }
-        text.innerText = view
     }
 
     fun registerCommand(command: Command) {
@@ -77,8 +86,11 @@ class KConsole(
 
     fun executeCommand(commandLine: String) {
         val parts = shlex(commandLine)
-        if (parts.isNullOrEmpty()) {
+        if (parts == null) {
             addLine("Syntax Error")
+            return
+        }
+        if (parts.isEmpty()) {
             return
         }
         val command = parts[0]
@@ -127,6 +139,7 @@ class KConsole(
                 if (event.key.length == 1 || event.key.any { it !in 'a'..'z' && it !in 'A'..'Z' })
                     input += event.key
         }
+        event.preventDefault()
         rerender()
         scrollDown()
     }

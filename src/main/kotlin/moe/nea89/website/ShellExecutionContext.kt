@@ -35,15 +35,17 @@ class ShellExecutionContext(
         ) {
             console.state = KConsole.ConsoleState.IN_PROGRAM
             val se = ShellExecutionContext(console, name, args)
-            command.runner.createCoroutine(se, object : Continuation<Unit> {
-                override val context: CoroutineContext
-                    get() = EmptyCoroutineContext
+            window.requestAnimationFrame {
+                command.runner.createCoroutine(se, object : Continuation<Unit> {
+                    override val context: CoroutineContext
+                        get() = EmptyCoroutineContext
 
-                override fun resumeWith(result: Result<Unit>) {
-                    console.state = KConsole.ConsoleState.SHELLPROMPT
-                    console.rerender()
-                }
-            }).resume(Unit)
+                    override fun resumeWith(result: Result<Unit>) {
+                        console.state = KConsole.ConsoleState.SHELLPROMPT
+                        console.rerender()
+                    }
+                }).resume(Unit)
+            }
         }
     }
 }

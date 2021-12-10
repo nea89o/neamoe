@@ -3,7 +3,11 @@ package moe.nea89.website
 import kotlinext.js.require
 import kotlinx.browser.document
 import kotlinx.html.dom.append
+import kotlinx.html.dom.create
+import kotlinx.html.img
+import kotlinx.html.js.a
 import kotlinx.html.js.div
+import kotlinx.html.js.p
 import styled.injectGlobal
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -17,6 +21,8 @@ val defaultFileSystem = fileSystem {
                 | - finish this website
                 | - convince the general public that comic sans is a viable font
             """.trimMargin()
+        "moisturized" image require("images/moisturized.jpg")
+        "download" download require("images/me.jpeg")
     }
     "flag" text "CTF{12345abcdefghijklmonp3.1.4.1.5.9.2.8}"
 }
@@ -88,8 +94,16 @@ fun main() {
         when (file) {
             is KFile.Directory -> console.addLine("cat: Is a directory")
             is KFile.Text -> console.addMultilineText(file.text)
-            is KFile.Image -> console.addMultilineText("Imagine here was an image: ${file.url}")
-            is KFile.Download -> console.addMultilineText("Imageine here was a download: ${file.url}")
+            is KFile.Image -> console.addLine(document.create.p {
+                img(src = file.url)
+            })
+            is KFile.Download -> {
+                val link = document.create.a(file.url)
+                link.download = file.name.last()
+                document.body!!.append(link)
+                link.click()
+                link.remove()
+            }
         }
     })
     console.registerCommand(command("dick", "cock") {
