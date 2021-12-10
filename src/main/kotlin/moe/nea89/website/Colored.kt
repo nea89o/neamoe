@@ -3,10 +3,12 @@ package moe.nea89.website
 import kotlinx.css.*
 
 enum class CustomColor(val color: Color) {
-    RED(Color("#ff0022")),
-    BLUE(Color("#3344ff")),
-    PURPLE(Color("#DA2EC2")),
-    GREEN(Color("#68DA2E"))
+    BLACK(Color("#282a39")),
+    RED(Color("#ff4473")),
+    BLUE(Color("#00fefc")),
+    PURPLE(Color("#6064fe")),
+    GREEN(Color("#4ce080")),
+    WHITE(Color("#efefef")),
 }
 
 data class ColoredElement(

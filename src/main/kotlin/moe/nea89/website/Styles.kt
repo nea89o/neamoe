@@ -7,8 +7,8 @@ import styled.StyleSheet
 object Styles : StyleSheet("Styles") {
     val consoleClass = "Console"
 
-    val bgColor = Color("#123456")
-    val fgColor = Color("#efefef")
+    val bgColor = CustomColor.BLACK.color
+    val fgColor = CustomColor.WHITE.color
     val comicMono = "\"Comic Mono\", monospace"
 
     val global by css {
