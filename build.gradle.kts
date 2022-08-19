@@ -35,7 +35,11 @@ dependencies {
     implementation(npm("prop-types", "^15.6.2"))
 }
 
-
+afterEvaluate {
+    rootProject.extensions.configure<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension> {
+        versions.webpackCli.version="4.10.0"
+    }
+}
 
 group = "moe.nea"
 version = "1.0-SNAPSHOT"
