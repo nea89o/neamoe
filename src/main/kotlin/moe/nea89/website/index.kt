@@ -28,10 +28,13 @@ val defaultFileSystem = fileSystem {
 }
 
 fun main() {
+
     require("@fontsource/comic-mono/index.css")
     injectGlobal(Styles.global)
     val root = document.body!!.append.div()
     val console = KConsole.createFor(root, fileSystem = defaultFileSystem)
+    console.PS1 = ">"
+    console.rerender()
     console.registerCommand(command("cwd", "pwd") {
         val fa = requireFileAccessor()
         console.addLine(fa.currentDir.joinToString(separator = "/", prefix = "/"))

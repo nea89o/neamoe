@@ -13,6 +13,7 @@ import org.w3c.dom.HTMLPreElement
 import org.w3c.dom.events.KeyboardEvent
 import kotlin.collections.set
 
+
 class KConsole(
     private val root: HTMLElement,
     private val text: HTMLPreElement,
@@ -21,7 +22,7 @@ class KConsole(
 ) {
 
     val fileAccessor = fileSystem?.let { FileAccessor(it) }
-
+    var PS1 = "$"
     companion object {
         val shlexRegex =
             """"([^"\\]+|\\.)+"|([^ "'\\]+|\\.)+|'([^'\\]+|\\.)+'""".toRegex()
@@ -78,7 +79,7 @@ class KConsole(
 
     fun rerender() {
         if (state == KConsole.ConsoleState.SHELLPROMPT) {
-            prompt.innerText = "${'$'} $input"
+            prompt.innerText = "$PS1 $input"
         } else {
             prompt.innerText = ""
         }
@@ -143,7 +144,7 @@ class KConsole(
         when (event.key) {
             "Enter" -> {
                 val toExecute = input
-                addLine("${'$'} $toExecute")
+                addLine("$PS1 $toExecute")
                 input = ""
                 executeCommand(toExecute)
             }
