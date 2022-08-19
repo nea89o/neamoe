@@ -1,6 +1,7 @@
 package moe.nea89.website
 
 import kotlinx.browser.document
+import kotlinx.dom.addClass
 import kotlinx.html.dom.append
 import kotlinx.html.dom.create
 import kotlinx.html.js.p
@@ -28,6 +29,7 @@ class KConsole(
         fun createFor(element: HTMLElement, fileSystem: KFileSystem? = null): KConsole {
             val text = element.append.pre()
             val prompt = text.append.p()
+            prompt.addClass(Styles.promptClass)
             element.classList.add(Styles.consoleClass)
             val console = KConsole(element, text, prompt, fileSystem)
             document.body!!.onkeydown = console::keydown

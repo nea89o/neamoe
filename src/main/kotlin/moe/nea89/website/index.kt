@@ -74,7 +74,8 @@ fun main() {
                     console.rerender()
                 }
             }
-            else -> "is a ${file.fileType}"
+
+            else -> console.addLine("ls: is a ${file.fileType}")
         }
     })
     console.registerCommand(command("color") {
@@ -100,6 +101,7 @@ fun main() {
             is KFile.Image -> console.addLine(document.create.p {
                 img(src = file.url)
             })
+
             is KFile.Download -> {
                 val link = document.create.a(file.url)
                 link.download = file.name.last()
