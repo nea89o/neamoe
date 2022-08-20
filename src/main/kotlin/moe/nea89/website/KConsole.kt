@@ -34,7 +34,6 @@ class KConsole(
             element.classList.add(Styles.consoleClass)
             val console = KConsole(element, text, prompt, fileSystem)
             document.body!!.onkeydown = console::keydown
-            console.addLine("Starting up terminal.")
             console.rerender()
             return console
         }

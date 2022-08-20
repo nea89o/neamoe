@@ -8,11 +8,11 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 8
-      - run: ./gradlew clean build
+      - run: ./gradlew clean :example:build
       - name: Github Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/master' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/distributions
+          publish_dir: ./example/build/distributions
 

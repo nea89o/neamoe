@@ -1,4 +1,4 @@
-package moe.nea89.website
+package moe.nea89.website.test
 
 import kotlinext.js.require
 import kotlinx.browser.document
@@ -8,6 +8,7 @@ import kotlinx.html.img
 import kotlinx.html.js.a
 import kotlinx.html.js.div
 import kotlinx.html.js.p
+import moe.nea89.website.*
 import styled.injectGlobal
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -33,6 +34,7 @@ fun main() {
     injectGlobal(Styles.global)
     val root = document.body!!.append.div()
     val console = KConsole.createFor(root, fileSystem = defaultFileSystem)
+    console.addLine("Starting up terminal.")
     console.PS1 = ">"
     console.rerender()
     console.registerCommand(command("cwd", "pwd") {

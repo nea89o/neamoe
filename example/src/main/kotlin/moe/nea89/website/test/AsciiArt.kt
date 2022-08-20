@@ -1,4 +1,4 @@
-package moe.nea89.website
+package moe.nea89.website.test
 
 import kotlinext.js.require
 
