@@ -31,10 +31,9 @@ allprojects {
     }
 
     dependencies {
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC")
-
-        implementation(enforcedPlatform("org.jetbrains.kotlin-wrappers:kotlin-wrappers-bom:0.0.1-pre.256-kotlin-1.5.31"))
-        implementation("org.jetbrains.kotlin-wrappers:kotlin-styled")
+        implementation(enforcedPlatform("org.jetbrains.kotlin-wrappers:kotlin-wrappers-bom:1.0.0-pre.376"))
+        api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+        api("org.jetbrains.kotlin-wrappers:kotlin-styled")
      //   implementation(npm("prop-types", "^15.6.2"))
     }
 }
