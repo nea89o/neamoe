@@ -4,6 +4,7 @@ import kotlinx.browser.document
 import kotlinx.dom.addClass
 import kotlinx.html.dom.append
 import kotlinx.html.dom.create
+import kotlinx.html.input
 import kotlinx.html.js.p
 import kotlinx.html.js.pre
 import kotlinx.html.js.span
@@ -11,19 +12,27 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLParagraphElement
 import org.w3c.dom.HTMLPreElement
 import org.w3c.dom.events.KeyboardEvent
+import styled.injectGlobal
 import kotlin.collections.set
 
 
 class KConsole(
-    private val root: HTMLElement,
-    private val text: HTMLPreElement,
-    private val prompt: HTMLElement,
+    val root: HTMLElement,
+    val text: HTMLPreElement,
+    val prompt: HTMLElement,
     fileSystem: KFileSystem?,
 ) {
 
+
     val fileAccessor = fileSystem?.let { FileAccessor(it) }
-    var PS1 = "$"
+    var PS1: KConsole.() -> String = { "$" }
+
     companion object {
+
+        init {
+            injectGlobal(Styles.global)
+        }
+
         val shlexRegex =
             """"([^"\\]+|\\.)+"|([^ "'\\]+|\\.)+|'([^'\\]+|\\.)+'""".toRegex()
 
@@ -33,6 +42,9 @@ class KConsole(
             prompt.addClass(Styles.promptClass)
             element.classList.add(Styles.consoleClass)
             val console = KConsole(element, text, prompt, fileSystem)
+            val inp = element.append.input()
+            inp.hidden = true
+            inp.focus()
             document.body!!.onkeydown = console::keydown
             console.rerender()
             return console
@@ -65,6 +77,7 @@ class KConsole(
                         el.style.color = it.color.color.toString()
                         el.append(it.text)
                     })
+
                     is String -> append(it)
                     else -> throw RuntimeException("Unknown element")
                 }
@@ -78,7 +91,7 @@ class KConsole(
 
     fun rerender() {
         if (state == KConsole.ConsoleState.SHELLPROMPT) {
-            prompt.innerText = "$PS1 $input"
+            prompt.innerText = "${PS1.invoke(this)} $input"
         } else {
             prompt.innerText = ""
         }
@@ -115,9 +128,9 @@ class KConsole(
             return
         }
         ShellExecutionContext.run(this, commandThing, command, arguments)
+        scrollDown()
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     fun shlex(command: String): List<String>? {
         var i = 0
         val parts = mutableListOf<String>()
@@ -143,10 +156,11 @@ class KConsole(
         when (event.key) {
             "Enter" -> {
                 val toExecute = input
-                addLine("$PS1 $toExecute")
+                addLine("${PS1.invoke(this)} $toExecute")
                 input = ""
                 executeCommand(toExecute)
             }
+
             "Backspace" -> input = input.substring(0, input.length - 1)
             else ->
                 if (event.key.length == 1 || event.key.any { it !in 'a'..'z' && it !in 'A'..'Z' })

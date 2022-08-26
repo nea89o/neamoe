@@ -8,26 +8,19 @@ import styled.StyleSheet
 import styled.animation
 
 
-object Styles : StyleSheet("Styles") {
+object Styles : StyleSheet("DefaultConsoleStyles") {
     val consoleClass = "Console"
     val promptClass = "prompt"
 
     val bgColor = CustomColor.BLACK.color
     val fgColor = CustomColor.WHITE.color
-    val comicMono = "\"Comic Mono\", monospace"
+    val monospacedFont = "monospace"
 
     val global by css {
         "*" {
             padding(0.px)
             margin(0.px)
             boxSizing = BoxSizing.borderBox
-        }
-        body {
-            width = 100.pct
-            height = 100.pct
-            backgroundColor = bgColor
-            color = fgColor
-            fontFamily = comicMono
         }
 
         ".$promptClass" {
@@ -49,8 +42,13 @@ object Styles : StyleSheet("Styles") {
         ".$consoleClass" {
             width = 100.pct
             height = 100.pct
+            backgroundColor = bgColor
+            color = fgColor
+            fontFamily = monospacedFont
+            width = 100.pct
+            height = 100.pct
             pre {
-                fontFamily = comicMono
+                fontFamily = monospacedFont
             }
         }
     }

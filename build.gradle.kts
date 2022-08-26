@@ -1,6 +1,5 @@
 plugins {
-    kotlin("js") version "1.6.0"
-    id("com.github.node-gradle.node") version "3.1.1"
+    kotlin("js") version "1.7.10"
 }
 
 allprojects {

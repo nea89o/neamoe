@@ -2,11 +2,13 @@ package moe.nea89.website.test
 
 import kotlinext.js.require
 import kotlinx.browser.document
+import kotlinx.css.*
 import kotlinx.html.dom.append
 import kotlinx.html.dom.create
 import kotlinx.html.img
 import kotlinx.html.js.a
 import kotlinx.html.js.div
+import kotlinx.html.js.onLoadFunction
 import kotlinx.html.js.p
 import moe.nea89.website.*
 import styled.injectGlobal
@@ -31,11 +33,26 @@ val defaultFileSystem = fileSystem {
 fun main() {
 
     require("@fontsource/comic-mono/index.css")
-    injectGlobal(Styles.global)
     val root = document.body!!.append.div()
     val console = KConsole.createFor(root, fileSystem = defaultFileSystem)
+    console.text.id = "myconsole"
+    injectGlobal {
+        body {
+            backgroundColor = Styles.bgColor.lighten(30)
+        }
+        ".${Styles.consoleClass}" {
+            margin(LinearDimension.auto)
+            width = 50.vw
+            height = 50.vh
+            marginTop = 25.vh
+            boxSizing = BoxSizing.borderBox
+            backgroundClip = BackgroundClip.contentBox
+            overflowY = Overflow.scroll
+        }
+
+    }
     console.addLine("Starting up terminal.")
-    console.PS1 = ">"
+    console.PS1 = { "${this.fileAccessor?.currentDir?.joinToString("/", "/") ?: ""} >" }
     console.rerender()
     console.registerCommand(command("cwd", "pwd") {
         val fa = requireFileAccessor()
@@ -104,7 +121,9 @@ fun main() {
             is KFile.Directory -> console.addLine("cat: Is a directory")
             is KFile.Text -> console.addMultilineText(file.text)
             is KFile.Image -> console.addLine(document.create.p {
-                img(src = file.url)
+                img(src = file.url) {
+                    this.onLoadFunction = { console.scrollDown() }
+                }
             })
 
             is KFile.Download -> {
