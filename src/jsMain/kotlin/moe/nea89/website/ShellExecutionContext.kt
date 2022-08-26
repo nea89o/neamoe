@@ -13,6 +13,7 @@ class ShellExecutionContext(
 ) {
 
     suspend fun wait(duration: Duration) {
+        if (!duration.isPositive()) return
         suspendCancellableCoroutine<Unit> {
             window.setTimeout({
                 it.resume(Unit)

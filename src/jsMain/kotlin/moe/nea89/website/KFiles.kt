@@ -151,10 +151,11 @@ class FileSystemBuilder {
     }
 }
 
-suspend fun ShellExecutionContext.requireFileAccessor(): FileAccessor {
+suspend fun ShellExecutionContext.requireFileAccessor(error: String? = "There is no file accessor present :("): FileAccessor {
     val fa = console.fileAccessor
     if (fa == null) {
-        console.addLine("There is no file accessor present :(")
+        if (error != null)
+            console.addLine(error)
         exit()
     }
     return fa
