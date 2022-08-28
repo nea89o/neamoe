@@ -10,6 +10,7 @@ import styled.animation
 
 object Styles : StyleSheet("DefaultConsoleStyles") {
     val consoleClass = "Console"
+    val mobileFocusInput = "mobileFocusInput"
     val promptClass = "prompt"
 
     val bgColor = CustomColor.BLACK.color
@@ -23,6 +24,11 @@ object Styles : StyleSheet("DefaultConsoleStyles") {
             boxSizing = BoxSizing.borderBox
         }
 
+        ".$mobileFocusInput" {
+            width = 0.px
+            height = 0.px
+            opacity = 0
+        }
         ".$promptClass" {
             width = LinearDimension.fitContent
             borderRightColor = fgColor
@@ -47,9 +53,7 @@ object Styles : StyleSheet("DefaultConsoleStyles") {
             fontFamily = monospacedFont
             width = 100.pct
             height = 100.pct
-            pre {
-                fontFamily = monospacedFont
-            }
+            fontFamily = monospacedFont
         }
     }
 }

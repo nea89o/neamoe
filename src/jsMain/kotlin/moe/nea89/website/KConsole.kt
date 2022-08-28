@@ -2,16 +2,20 @@ package moe.nea89.website
 
 import kotlinx.browser.document
 import kotlinx.dom.addClass
+import kotlinx.html.InputType
 import kotlinx.html.dom.append
 import kotlinx.html.dom.create
-import kotlinx.html.input
+import kotlinx.html.js.input
 import kotlinx.html.js.p
 import kotlinx.html.js.pre
 import kotlinx.html.js.span
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.HTMLParagraphElement
 import org.w3c.dom.HTMLPreElement
+import org.w3c.dom.events.EventType
 import org.w3c.dom.events.KeyboardEvent
+import org.w3c.dom.events.addEventHandler
 import styled.injectGlobal
 import kotlin.collections.set
 
@@ -24,8 +28,10 @@ class KConsole(
 ) {
 
 
+    private lateinit var uninjectKeyHandler: () -> Unit
     val fileAccessor = fileSystem?.let { FileAccessor(it) }
     var PS1: KConsole.() -> String = { "$" }
+    private lateinit var mobileInput: HTMLInputElement
 
     companion object {
 
@@ -42,10 +48,8 @@ class KConsole(
             prompt.addClass(Styles.promptClass)
             element.classList.add(Styles.consoleClass)
             val console = KConsole(element, text, prompt, fileSystem)
-            val inp = element.append.input()
-            inp.hidden = true
-            inp.focus()
-            document.body!!.onkeydown = console::keydown
+            console.uninjectKeyHandler =
+                document.body!!.addEventHandler(EventType("keydown"), console::keydown)
             console.rerender()
             return console
         }
@@ -59,6 +63,23 @@ class KConsole(
     var state = ConsoleState.SHELLPROMPT
 
     var input: String = ""
+    var justHandledInput = false
+    fun openMobileKeyboardOnTap() {
+        uninjectKeyHandler()
+        mobileInput = this.root.append.input(InputType.text)
+        mobileInput.classList.add(Styles.mobileFocusInput)
+        mobileInput.onkeyup = this::keydown
+        mobileInput.oninput = {
+            input += it.data
+            mobileInput.value = ""
+            justHandledInput = true
+            rerender()
+            scrollDown()
+        }
+        root.onclick = {
+            mobileInput.focus()
+        }
+    }
 
     fun addLines(newLines: List<String>) {
         newLines.forEach { addLine(it) }
@@ -149,16 +170,33 @@ class KConsole(
         return parts
     }
 
+    fun handleSubmit() {
+        val toExecute = input
+        addLine("${PS1.invoke(this)} $toExecute")
+        input = ""
+        executeCommand(toExecute)
+    }
+
     fun keydown(event: KeyboardEvent) {
         if (event.altKey || event.ctrlKey || event.metaKey) return
-        if (event.isComposing || event.keyCode == 229) return
+        if (event.isComposing) return
         if (state != ConsoleState.SHELLPROMPT) return
-        when (event.key) {
+        if (justHandledInput) {
+            justHandledInput = false
+            return
+        }
+        val toHandle = if (event.keyCode == 229) {
+            val x = (mobileInput.selectionStart ?: 1) - 1
+            val v = mobileInput.value
+            addLine("X: $x, V: $v")
+            if (x < 0 || x >= v.length)
+                return
+            mobileInput.value = ""
+            v[x]
+        } else event.key
+        when (toHandle) {
             "Enter" -> {
-                val toExecute = input
-                addLine("${PS1.invoke(this)} $toExecute")
-                input = ""
-                executeCommand(toExecute)
+                handleSubmit()
             }
 
             "Backspace" -> input = input.substring(0, input.length - 1)
