@@ -181,7 +181,8 @@ class KConsole(
     fun keydown(event: KeyboardEvent) {
         if (event.altKey || event.metaKey) return
         if (event.ctrlKey) {
-            handleControlDown(event); return
+            handleControlDown(event)
+            return
         }
         if (event.isComposing) return
         if (state != ConsoleState.SHELLPROMPT) return
@@ -212,16 +213,16 @@ class KConsole(
         rerender()
         scrollDown()
     }
-}
-fun handleControlDown(event: KeyboardEvent){
+    
+    
+    fun handleControlDown(event: KeyboardEvent){
         if (event.key == "v"){
-            window.navigator.clipboard.readText().then{
+            event.preventDefault()
+            window.navigator.clipboard.readText().then {
                 input += it
-                event.preventDefault()
                 rerender()
                 scrollDown()
             }
-
         }
     }
 }
