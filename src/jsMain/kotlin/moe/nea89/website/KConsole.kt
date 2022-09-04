@@ -1,5 +1,6 @@
 package moe.nea89.website
 
+import kotlinx.browser.window
 import kotlinx.browser.document
 import kotlinx.dom.addClass
 import kotlinx.html.InputType
@@ -178,7 +179,11 @@ class KConsole(
     }
 
     fun keydown(event: KeyboardEvent) {
-        if (event.altKey || event.ctrlKey || event.metaKey) return
+        if (event.altKey || event.metaKey) return
+        if (event.ctrlKey) {
+            handleControlDown(event)
+            return
+        }
         if (event.isComposing) return
         if (state != ConsoleState.SHELLPROMPT) return
         if (justHandledInput) {
@@ -207,5 +212,17 @@ class KConsole(
         event.preventDefault()
         rerender()
         scrollDown()
+    }
+    
+    
+    fun handleControlDown(event: KeyboardEvent){
+        if (event.key == "v"){
+            event.preventDefault()
+            window.navigator.clipboard.readText().then {
+                input += it
+                rerender()
+                scrollDown()
+            }
+        }
     }
 }
