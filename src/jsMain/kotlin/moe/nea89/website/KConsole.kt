@@ -31,6 +31,9 @@ class KConsole(
 
     private lateinit var uninjectKeyHandler: () -> Unit
     val fileAccessor = fileSystem?.let { FileAccessor(it) }
+    var wholecommand = ""
+    var currenthistory = 0
+    var commandHistory : Array<String> = emptyArray()
     var PS1: KConsole.() -> String = { "$" }
     private lateinit var mobileInput: HTMLInputElement
 
@@ -142,7 +145,14 @@ class KConsole(
             return
         }
         val command = parts[0]
-        println("Running command: $command")
+        wholecommand = ""
+        println("whole command:")
+        for (element in parts){
+            wholecommand += element + " "
+        }
+        println(wholecommand)
+        commandHistory += wholecommand
+
         val arguments = parts.drop(1)
         val commandThing = commands[command]
         if (commandThing == null) {
@@ -172,6 +182,7 @@ class KConsole(
     }
 
     fun handleSubmit() {
+        currenthistory = 0
         val toExecute = input
         addLine("${PS1.invoke(this)} $toExecute")
         input = ""
@@ -183,6 +194,9 @@ class KConsole(
         if (event.ctrlKey) {
             handleControlDown(event)
             return
+        }
+        if (event.keyCode == 38 || event.keyCode == 40) {
+            handleArrowKeys(event)
         }
         if (event.isComposing) return
         if (state != ConsoleState.SHELLPROMPT) return
@@ -213,8 +227,8 @@ class KConsole(
         rerender()
         scrollDown()
     }
-    
-    
+
+
     fun handleControlDown(event: KeyboardEvent){
         if (event.key == "v"){
             event.preventDefault()
@@ -223,6 +237,22 @@ class KConsole(
                 rerender()
                 scrollDown()
             }
+        }
+    }
+    fun handleArrowKeys(event: KeyboardEvent){
+        if (event.keyCode == 40) {
+            if (commandHistory.isEmpty() || currenthistory > commandHistory.size || currenthistory == 0){
+                return
+            }
+            input = commandHistory[commandHistory.size-currenthistory]
+            currenthistory -= 1
+        }
+        if (event.keyCode == 38) {
+            if (commandHistory.isEmpty() || currenthistory == commandHistory.size){
+                return
+            }
+            input = commandHistory[commandHistory.size-1-currenthistory]
+            currenthistory += 1
         }
     }
 }
