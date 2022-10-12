@@ -31,7 +31,6 @@ class KConsole(
 
     private lateinit var uninjectKeyHandler: () -> Unit
     val fileAccessor = fileSystem?.let { FileAccessor(it) }
-    var wholecommand = ""
     var currenthistory = 0
     var commandHistory : Array<String> = emptyArray()
     var PS1: KConsole.() -> String = { "$" }
@@ -145,13 +144,9 @@ class KConsole(
             return
         }
         val command = parts[0]
-        wholecommand = ""
         println("whole command:")
-        for (element in parts){
-            wholecommand += element + " "
-        }
-        println(wholecommand)
-        commandHistory += wholecommand
+        println(commandLine)
+        commandHistory += commandLine
 
         val arguments = parts.drop(1)
         val commandThing = commands[command]
