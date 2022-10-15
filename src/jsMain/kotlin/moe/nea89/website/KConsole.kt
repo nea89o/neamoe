@@ -1,7 +1,7 @@
 package moe.nea89.website
 
-import kotlinx.browser.window
 import kotlinx.browser.document
+import kotlinx.browser.window
 import kotlinx.dom.addClass
 import kotlinx.html.InputType
 import kotlinx.html.dom.append
@@ -31,8 +31,8 @@ class KConsole(
 
     private lateinit var uninjectKeyHandler: () -> Unit
     val fileAccessor = fileSystem?.let { FileAccessor(it) }
-    var currenthistory = 0
-    var commandHistory : Array<String> = emptyArray()
+    var currentHistoryIndex = -1
+    var commandHistory: Array<String> = emptyArray()
     var PS1: KConsole.() -> String = { "$" }
     private lateinit var mobileInput: HTMLInputElement
 
@@ -144,9 +144,6 @@ class KConsole(
             return
         }
         val command = parts[0]
-        println("whole command:")
-        println(commandLine)
-        commandHistory += commandLine
 
         val arguments = parts.drop(1)
         val commandThing = commands[command]
@@ -177,8 +174,9 @@ class KConsole(
     }
 
     fun handleSubmit() {
-        currenthistory = 0
         val toExecute = input
+        currentHistoryIndex = -1
+        commandHistory += toExecute
         addLine("${PS1.invoke(this)} $toExecute")
         input = ""
         executeCommand(toExecute)
@@ -224,8 +222,8 @@ class KConsole(
     }
 
 
-    fun handleControlDown(event: KeyboardEvent){
-        if (event.key == "v"){
+    fun handleControlDown(event: KeyboardEvent) {
+        if (event.key == "v") {
             event.preventDefault()
             window.navigator.clipboard.readText().then {
                 input += it
@@ -234,20 +232,20 @@ class KConsole(
             }
         }
     }
-    fun handleArrowKeys(event: KeyboardEvent){
+
+    fun handleArrowKeys(event: KeyboardEvent) {
+        val last = currentHistoryIndex
         if (event.keyCode == 40) {
-            if (commandHistory.isEmpty() || currenthistory > commandHistory.size || currenthistory == 0){
-                return
-            }
-            input = commandHistory[commandHistory.size-currenthistory]
-            currenthistory -= 1
+            currentHistoryIndex = (currentHistoryIndex - 1).coerceAtLeast(-1)
         }
         if (event.keyCode == 38) {
-            if (commandHistory.isEmpty() || currenthistory == commandHistory.size){
-                return
-            }
-            input = commandHistory[commandHistory.size-1-currenthistory]
-            currenthistory += 1
+            currentHistoryIndex = (currentHistoryIndex + 1).coerceAtMost(commandHistory.size - 1)
+        }
+        if (last == currentHistoryIndex) return
+        if (currentHistoryIndex in commandHistory.indices) {
+            input = commandHistory[commandHistory.size - currentHistoryIndex - 1]
+        } else {
+            input = ""
         }
     }
 }
